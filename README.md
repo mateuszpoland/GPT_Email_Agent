@@ -2,7 +2,7 @@
 
 ## 1. Project Overview
 
-This project will deliver a sophisticated AI-powered agent designed to streamline customer support by intelligently handling email inquiries. The primary goal is to automate the process of identifying customer needs for specific spare parts and drafting accurate, helpful email responses.
+This project will deliver a sophisticated AI-powered agent designed to streamline customer support by intelligently handling email inquiries. The primary goal is to automate the process of identifying customer needs for specific product and service and drafting accurate, helpful email responses.
 
 The solution is built on a foundation of **secure, reliable automation with robust human oversight.** It addresses the core challenge of managing repetitive, high-volume email inquiries, freeing up valuable human time to focus on more complex customer issues. This document outlines our strategic approach, architecture, and the planned development process.
 
@@ -20,7 +20,7 @@ graph TD
 
     subgraph "AI Email Agent System"
         C[1. Email Ingestion Service] --> D{2. AI Analysis & Orchestration}
-        D --> E[3. Tools Execution<br/>- Query Products<br/>- Get History]
+        D --> E["3. Tools Execution<br/>- Query Products<br/>- Get History"]
         E --> F[4. Draft Generation]
     end
     
