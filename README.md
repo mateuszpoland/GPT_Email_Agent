@@ -29,7 +29,7 @@ graph TD
     
     subgraph "Human Validation Loop"
         F --> G[Staging Inbox - validation"]
-        G --> H{Human Review in Email Client"}
+        G --> H[Human Review in Email Client"]
         H -- "Approve" --> I[Send to Customer]
         H -- "Edit & Reply" --> I
     end
