@@ -17,7 +17,6 @@ graph TD
     subgraph "Customer Interaction"
         A[Customer sends email] --> B(Gmail Inbox)
     end
-    %% Note: The following is a Mermaid diagram, not a Markdown list.
 
     subgraph "AI Email Agent System"
         C[Email Ingestion Service] --> D{AI Analysis & Orchestration}
@@ -29,9 +28,9 @@ graph TD
     end
     
     subgraph "Human Validation Loop"
-        F --> G["5. Staging Inbox<br/>validation@..."]
-        G --> H{"6. Human Review<br/>in Email Client"}
-        H -- "Approve" --> I["7. Send to Customer"]
+        F --> G[Staging Inbox - validation"]
+        G --> H{Human Review in Email Client"}
+        H -- "Approve" --> I[Send to Customer]
         H -- "Edit & Reply" --> I
     end
 
