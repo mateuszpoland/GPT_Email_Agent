@@ -22,15 +22,12 @@ graph TD
         C[Email Ingestion Service] --> D{AI Analysis & Orchestration}
         D --> E[Tools Execution]
         E --> F[Draft Generation]
-        %% Details for Tools Execution:
-        %% - Query Products
-        %% - Get History
     end
     
     subgraph "Human Validation Loop"
-        F --> G[Staging Inbox - validation"]
-        G --> H[Human Review in Email Client"]
-        H -- "Approve" --> I[Send to Customer]
+        F --> G["Staging Inbox - validation@..."]
+        G --> H["Human Review in Email Client"]
+        H -- "Approve" --> I["Send to Customer"]
         H -- "Edit & Reply" --> I
     end
 
