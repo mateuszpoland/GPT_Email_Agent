@@ -34,7 +34,6 @@ graph TD
         H -- "Approve" --> I["7. Send to Customer"]
         H -- "Edit & Reply" --> I
     end
-    end
 
     subgraph "Data & Knowledge"
         KB[(Knowledge Base<br/>Products & FAQs)]
