@@ -1,0 +1,146 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": 1,
+        "title": "Setup Project Infrastructure and Gmail API Integration",
+        "description": "Initialize the project repository, configure local Docker environment, define deployment packaging for serverless functions, and establish secure Gmail API connection with OAuth2 authentication.",
+        "details": "1.  **Local Development Environment (Docker):**\n    *   Create `docker-compose.yml` to orchestrate services.\n    *   Define a service for the Python application, including a `Dockerfile` for the runtime.\n    *   Define a service for a PostgreSQL database (`postgres:latest` image).\n    *   Use Docker volumes for persistent database storage and shared code.\n\n2.  **Packaging for Serverless Deployment (Cloud Functions):**\n    *   Create a `requirements.txt` file listing all Python dependencies.\n    *   Develop a build/deployment script (`deploy.sh`) that:\n        a. Installs dependencies into a `package` directory.\n        b. Copies the application source code into the `package` directory.\n        c. Creates a `.zip` archive of the `package` directory, ready for upload to Google Cloud Functions.\n\n3.  **Database Setup & Migrations:**\n    *   **Local:** Use the PostgreSQL container defined in `docker-compose`.\n    *   **Migrations:** Integrate `Alembic` for robust schema migrations. Create an initial migration and define a command to run migrations automatically on startup or manually.\n    *   **Production:** For a cost-effective and scalable solution compatible with serverless functions, recommend **Google Cloud SQL for PostgreSQL** or a serverless Postgres provider like **Neon**. These managed services handle connection pooling, scaling, and backups, which are critical for serverless architectures.\n\n4.  **Gmail API Integration:**\n    *   Create Google Cloud Platform project and enable Gmail API.\n    *   Configure OAuth2 credentials and scopes (gmail.readonly, gmail.send).\n    *   Implement secure credential management using environment variables and a secret manager.",
+        "testStrategy": "1. Verify `docker-compose up` successfully launches the local environment.\n2. Confirm the packaging script creates a valid zip file for deployment.\n3. Test that Alembic migrations can be applied and reverted on the local database.\n4. Validate Gmail API connection and OAuth2 flow.",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 2,
+        "title": "Implement Database Schema and Core Data Models",
+        "description": "Design and implement database schema for storing emails, drafts, product knowledge base, and system logs",
+        "details": "1. Choose appropriate database (PostgreSQL recommended for relational data)\n2. Design schema for:\n   - emails table (id, gmail_id, sender, subject, body, received_at, processed_at)\n   - drafts table (id, email_id, content, status, created_at, reviewed_at)\n   - products table (id, name, model, category, url, description)\n   - logs table (id, event_type, message, timestamp, metadata)\n3. Implement database connection and ORM setup\n4. Create migration scripts\n5. Add database indexes for performance\n\nPseudo-code:\n```python\nfrom sqlalchemy import Column, Integer, String, DateTime, Text, ForeignKey\nfrom sqlalchemy.ext.declarative import declarative_base\n\nBase = declarative_base()\n\nclass Email(Base):\n    __tablename__ = 'emails'\n    id = Column(Integer, primary_key=True)\n    gmail_id = Column(String, unique=True)\n    sender = Column(String)\n    subject = Column(String)\n    body = Column(Text)\n    received_at = Column(DateTime)\n    processed_at = Column(DateTime)\n```",
+        "testStrategy": "1. Test database connection and schema creation\n2. Validate all CRUD operations on each table\n3. Test data integrity constraints\n4. Verify migration scripts work correctly\n5. Performance test with sample data",
+        "priority": "high",
+        "dependencies": [
+          1
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 3,
+        "title": "Build Email Ingestion and Processing Pipeline",
+        "description": "Implement system to poll Gmail inbox, fetch new emails, parse content, and store in database while avoiding duplicates",
+        "details": "1. Create email polling service that runs periodically to monitor two inboxes:\n   a. The main customer-facing inbox for new inquiries.\n   b. The internal `validation@` inbox for user feedback.\n2. Implement Gmail API queries to fetch unread emails from both sources.\n3. For customer emails: Parse content, store in DB with deduplication logic, and trigger the AI analysis pipeline.\n4. For validation emails: Parse content to identify the unique draft ID, the user's action (e.g., reply with edits), and trigger the appropriate final sending workflow.\n5. Mark emails as processed to avoid reprocessing.\n6. Handle email threading and replies appropriately, especially for linking validation replies back to the original draft.",
+        "testStrategy": "1. Test email fetching from both customer and validation inboxes.\n2. Verify deduplication logic prevents duplicate processing.\n3. Test error handling for API failures.\n4. Validate email parsing accuracy for both inquiry and validation reply formats.\n5. Test polling mechanism with scheduled runs",
+        "priority": "high",
+        "dependencies": [
+          1,
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 4,
+        "title": "Create Knowledge Base Management System",
+        "description": "Implement system for storing, updating, and querying product catalog data with support for CSV/JSON file uploads",
+        "details": "1. Design product data structure (name, model, category, URL, description)\n2. Implement file upload mechanism for CSV/JSON product catalogs\n3. Create data validation and parsing logic\n4. Build product search and matching algorithms\n5. Implement knowledge base reload functionality\n6. Add support for product categorization and tagging\n7. Create backup and versioning for knowledge base updates\n\n**Note:** The product search functionality developed in this task will serve as a key 'Tool' for the AI agent, allowing it to query the product catalog programmatically as part of the OpenAI Actions workflow.\n\nPseudo-code:\n```python\nclass KnowledgeBaseManager:\n    def __init__(self, db_session):\n        self.db = db_session\n    \n    def upload_catalog(self, file_path, format='csv'):\n        if format == 'csv':\n            products = self.parse_csv(file_path)\n        elif format == 'json':\n            products = self.parse_json(file_path)\n        \n        self.validate_products(products)\n        self.update_database(products)\n    \n    def search_products(self, query_terms):\n        # Implement fuzzy matching and relevance scoring\n        pass\n```",
+        "testStrategy": "1. Test CSV and JSON file parsing with various formats\n2. Validate data integrity and error handling\n3. Test product search accuracy with different queries\n4. Verify knowledge base reload without downtime\n5. Test backup and recovery mechanisms",
+        "priority": "medium",
+        "dependencies": [
+          2
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 5,
+        "title": "Integrate AI Analysis Engine and Orchestrator",
+        "description": "Implement the core AI orchestration logic using OpenAI Actions (tool calling) to analyze emails and determine the next steps.",
+        "details": "1.  **Define Tool Specifications:**\n    *   Create JSON schemas for all functions the AI can call, such as `query_product_db` and `get_customer_history`.\n    *   The schema must accurately describe the function's purpose, parameters (with types and descriptions), and required parameters.\n\n2.  **Implement Orchestration Logic:**\n    *   Develop the main loop to manage the multi-step conversation with the OpenAI Chat Completions API.\n    *   **Step A (Initial Call):** Send the initial user message (email content) along with the list of available `tools`.\n    *   **Step B (Response Handling):** If the response contains `tool_calls`, parse the requested tool name and arguments. Otherwise, process the response as the final answer.\n    *   **Step C (Tool Execution):** Based on the parsed `tool_calls`, execute the corresponding local Python function.\n    *   **Step D (Follow-up Call):** Append the tool's output to the conversation history and call the API again to get a final, natural-language response.\n\n3.  **Error Handling:**\n    *   Implement robust error handling for API failures, malformed `tool_calls`, and errors during local tool execution.\n\nPseudo-code:\n```python\nclass AgentOrchestrator:\n    def process_email(self, email_content):\n        messages = [{\"role\": \"user\", \"content\": email_content}]\n        tools = [get_product_tool_schema(), ...]\n\n        # Step A: Initial Call\n        response_message = client.chat.completions.create(\n            model=\"gpt-4-turbo\",\n            messages=messages,\n            tools=tools\n        ).choices[0].message\n\n        # Step B: Response Handling\n        if response_message.tool_calls:\n            messages.append(response_message)\n            # Step C: Tool Execution\n            for tool_call in response_message.tool_calls:\n                function_response = execute_tool(tool_call)\n                messages.append(\n                    {\n                        \"tool_call_id\": tool_call.id,\n                        \"role\": \"tool\",\n                        \"name\": tool_call.function.name,\n                        \"content\": function_response,\n                    }\n                )\n            \n            # Step D: Follow-up Call\n            final_response = client.chat.completions.create(\n                model=\"gpt-4-turbo\", messages=messages\n            )\n            return final_response.choices[0].message.content\n        else:\n            return response_message.content\n```",
+        "testStrategy": "1. Write unit tests to validate that the generated tool schemas are correct JSON.\n2. Test the orchestrator logic by mocking the OpenAI API responses for both direct answers and tool_calls.\n3. Write integration tests for the full tool-use loop, from initial call to tool execution and the final follow-up call.\n4. Verify that API errors, invalid tool names, and tool execution failures are caught and handled gracefully.\n5. Confirm that 'I don't know' cases are handled correctly when the AI decides not to call any tools.",
+        "priority": "high",
+        "dependencies": [
+          2,
+          3
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 6,
+        "title": "Build Product Matching and Response Generation System",
+        "description": "Implement logic to match extracted entities against knowledge base and generate appropriate email draft responses",
+        "details": "1. Create product matching algorithm using extracted entities\n2. Implement fuzzy matching for product names and models\n3. Add relevance scoring and ranking for multiple matches\n4. Design response templates for different scenarios\n5. Generate draft emails with product information and URLs\n6. Handle cases where no match is found\n7. Implement response personalization based on customer context\n\n**Note:** The core methods of this system, like product matching and search, will be designed as self-contained functions to be exposed as Tools for the OpenAI Actions orchestrator (Task 5).\n\nPseudo-code:\n```python\nclass ProductMatcher:\n    def __init__(self, knowledge_base, ai_engine):\n        self.kb = knowledge_base\n        self.ai = ai_engine\n    \n    def match_products(self, entities, confidence_threshold=0.7):\n        matches = []\n        for entity in entities:\n            products = self.kb.search_products(entity)\n            scored_matches = self.score_relevance(entity, products)\n            matches.extend(scored_matches)\n        \n        return self.rank_matches(matches, confidence_threshold)\n    \n    def generate_response(self, original_email, matched_products):\n        if not matched_products:\n            return self.generate_no_match_response()\n        \n        template = self.select_response_template(matched_products)\n        return self.populate_template(template, matched_products)\n```",
+        "testStrategy": "1. Test product matching accuracy with various queries\n2. Validate response generation quality\n3. Test handling of no-match scenarios\n4. Verify URL inclusion and formatting\n5. Test response personalization features",
+        "priority": "high",
+        "dependencies": [
+          4,
+          5
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 7,
+        "title": "Implement Draft Storage and Management System",
+        "description": "Create system to store AI-generated drafts, manage their lifecycle, and track validation status",
+        "details": "1. Implement draft creation and storage in database\n2. Create draft status management (pending_review, approved, rejected, sent)\n3. Link drafts to original emails with proper relationships\n4. Add draft versioning for edited responses\n5. Implement draft expiration and cleanup logic\n6. Create draft retrieval and filtering capabilities\n7. Add metadata tracking for analytics\n\nPseudo-code:\n```python\nclass DraftManager:\n    def __init__(self, db_session):\n        self.db = db_session\n    \n    def create_draft(self, email_id, content, ai_confidence):\n        draft = Draft(\n            email_id=email_id,\n            content=content,\n            status='pending_review',\n            ai_confidence=ai_confidence,\n            created_at=datetime.now()\n        )\n        self.db.add(draft)\n        self.db.commit()\n        return draft\n    \n    def update_draft_status(self, draft_id, status, reviewer_notes=None):\n        draft = self.db.query(Draft).filter_by(id=draft_id).first()\n        draft.status = status\n        draft.reviewed_at = datetime.now()\n        if reviewer_notes:\n            draft.reviewer_notes = reviewer_notes\n        self.db.commit()\n```",
+        "testStrategy": "1. Test draft creation and storage\n2. Validate status transitions and constraints\n3. Test draft-email relationship integrity\n4. Verify cleanup and expiration logic\n5. Test concurrent access and updates",
+        "priority": "medium",
+        "dependencies": [
+          2,
+          6
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 8,
+        "title": "Implement Staging & Validation Workflow",
+        "description": "Build the 'Staging Inbox' workflow. The agent will send drafts to an internal email address, where a validator can approve or correct them using simple email actions.",
+        "details": "1. **Staging Email Generation:**\n   - After a draft is created, the system sends an HTML-formatted email to the internal `validation@` address.\n   - The subject line must contain a unique ID (e.g., `[DRAFT-123]`).\n   - The email body must contain the proposed response and an action bar.\n2. **Action Bar Implementation:**\n   - **Approve & Send:** A `mailto:` link or webhook URL that, when clicked, signals the backend to send the original draft to the customer.\n   - **Edit & Send:** A link to a simple, single-page web form, pre-populated with the draft content and a dropdown for error classification.\n3. **Reply-Based Correction:**\n   - The system must correctly parse replies to the staging email to extract the user's corrected text and any optional error classification notes.",
+        "testStrategy": "1. Verify that staging emails are correctly formatted and sent to the validation inbox.\n2. Test the 'Approve & Send' link to ensure it triggers the correct backend action and sends the original draft.\n3. Test the reply-parsing logic to accurately extract corrected text and metadata.\n4. Validate the 'Edit & Send' web form, ensuring it pre-populates correctly and that submissions trigger the sending of the edited content.",
+        "priority": "high",
+        "dependencies": [
+          7
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 9,
+        "title": "Implement Final Email Sending and Status Tracking",
+        "description": "Create the system to send the final, approved email to the customer, triggered by the validation workflow.",
+        "details": "1.  **Trigger Mechanism:** The sending function is triggered by one of two events:\n    a. A call from the 'Approve & Send' webhook.\n    b. A call from the validation inbox processor after a user replies with corrections.\n2.  **Implement Gmail API Sending:** Send the final email content (either original or corrected) to the customer, ensuring it's part of the correct conversation thread.\n3.  **Status and Data Updates:**\n    - Update the draft's status in the database to 'Approved' or 'ApprovedWithEdits'.\n    - If edited, store the final corrected text alongside the original draft for KPI tracking and future analysis.\n    - Log any user-provided error classifications.\n4.  **Error Handling:** Implement robust error handling and retry logic for the final send to the customer.",
+        "testStrategy": "1. Test email sending triggered from both the 'Approve' link and a reply email.\n2. Validate that the correct version (original or edited) of the text is sent.\n3. Verify that the draft status and all feedback data are correctly updated in the database.\n4. Test API error handling during the final send operation.\n5. Confirm the sent email correctly appears in the customer's conversation thread.",
+        "priority": "high",
+        "dependencies": [
+          1,
+          8
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": 10,
+        "title": "Implement Comprehensive Logging and Monitoring System",
+        "description": "Create logging infrastructure and basic reporting dashboard for tracking system performance and KPIs",
+        "details": "1. Implement structured logging for all system events\n2. Create log levels and categorization\n3. Add performance metrics tracking\n4. Implement KPI calculation and storage\n5. Create basic dashboard for monitoring\n6. Add alerting for system errors and anomalies\n7. Implement log rotation and archival\n8. Create reporting for draft acceptance rates and processing volumes\n\nPseudo-code:\n```python\nimport logging\nfrom datetime import datetime, timedelta\n\nclass SystemLogger:\n    def __init__(self):\n        self.logger = logging.getLogger('ai_email_agent')\n        self.setup_logging()\n    \n    def log_email_processed(self, email_id, processing_time):\n        self.logger.info({\n            'event': 'email_processed',\n            'email_id': email_id,\n            'processing_time': processing_time,\n            'timestamp': datetime.now().isoformat()\n        })\n    \n    def log_draft_action(self, draft_id, action, user_id):\n        self.logger.info({\n            'event': 'draft_action',\n            'draft_id': draft_id,\n            'action': action,\n            'user_id': user_id,\n            'timestamp': datetime.now().isoformat()\n        })\n\nclass KPITracker:\n    def calculate_draft_acceptance_rate(self, period_days=30):\n        start_date = datetime.now() - timedelta(days=period_days)\n        total_drafts = self.db.query(Draft).filter(\n            Draft.created_at >= start_date\n        ).count()\n        approved_drafts = self.db.query(Draft).filter(\n            Draft.created_at >= start_date,\n            Draft.status == 'approved'\n        ).count()\n        \n        return (approved_drafts / total_drafts) * 100 if total_drafts > 0 else 0\n```",
+        "testStrategy": "1. Test logging functionality across all system components\n2. Validate KPI calculations accuracy\n3. Test dashboard performance with large datasets\n4. Verify alerting mechanisms work correctly\n5. Test log rotation and storage management",
+        "priority": "medium",
+        "dependencies": [
+          2,
+          7,
+          9
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "created": "2025-07-08T20:16:17.208Z",
+      "updated": "2025-07-08T20:16:17.208Z",
+      "description": "Tasks for master context"
+    }
+  }
+}
