@@ -131,6 +131,56 @@ Development will proceed through three distinct, fixed-price milestones to ensur
 
 ---
 
+## 5. Infrastructure Requirements & Estimated Costs
+
+To deliver this project, we will rely on modern, scalable, and cost-effective cloud services. This section outlines the required accounts and infrastructure, along with estimated monthly costs. The architecture is designed to leverage generous free tiers, allowing the project to start with minimal fixed expenses.
+
+#### Summary of Services & Costs
+
+| Service/Tool                | Purpose                                | Estimated Monthly Cost (Starting)     |
+| :-------------------------- | :------------------------------------- | :------------------------------------ |
+| Google Cloud Platform       | Emailing (Gmail API)                   | Free Tier                             |
+| Application Hosting         | Running the agent's backend logic      | Free Tier (e.g., Vercel) or ~$20+     |
+| Database & Vector Store     | Storing data & product knowledge       | Free Tier (e.g., Supabase/Neon Vector DB - Postgres + pgvector) or ~$25+   |
+| AI Model Provider           | AI analysis & email drafting           | Variable (Usage-Based)                |
+| **Total Estimated Start**   |                                        | **$0 in fixed costs + Variable AI fees** |
+
+---
+
+### Detailed Breakdown
+
+#### 1. Google Cloud Platform (GCP)
+*   **Purpose:** To securely read incoming customer emails and send the final, validated responses using the **Gmail API**.
+*   **Requirements:** A standard Google account is all that is needed to create a GCP project.
+*   **Cost Estimate:** The Gmail API has a very high daily usage limit, and this project's workload will not come close to exceeding it. Therefore, this service is effectively free.
+    *   **Estimated Cost: $0**
+
+#### 2. Application Hosting (Serverless Platform)
+*   **Purpose:** To run the core backend application—the "AI Email Agent System" that orchestrates email processing, AI analysis, and the validation workflow.
+*   **Recommendation:** A serverless platform like **Vercel** is highly recommended. It is cost-effective, scales automatically to handle any workload, and removes the need for manual server management.
+*   **Cost Estimate:** Vercel's "Hobby" plan is free and sufficient for development and initial production use. If email volume grows significantly, the "Pro" plan provides more capacity.
+    *   **Estimated Starting Cost: $0** (up to **$20/month** for future scaling)
+
+#### 3. Database & Knowledge Base (Data Platform)
+*   **Purpose:** To store all operational data, including processed emails, AI-generated drafts, action logs, and the "Knowledge Base" of products and FAQs.
+*   **Recommendation:** A unified data platform like **Supabase** is the ideal choice. It provides a robust PostgreSQL database for structured data and includes the `pgvector` extension, which allows it to function as a high-performance vector database for the AI's knowledge base. This consolidates two needs into one efficient service.
+*   **Cost Estimate:** Supabase offers a free tier that is perfectly suitable for getting the project started. Paid plans are available if data storage and usage grow beyond the generous free limits.
+    *   **Estimated Starting Cost: $0** (up to **$25-50/month** for future scaling)
+
+#### 4. AI Model Provider (e.g., OpenAI, Anthropic)
+*   **Purpose:** This is the core intelligence of the system, responsible for analyzing customer intent and drafting accurate email responses.
+*   **Cost Estimate:** This is the primary **variable cost** and depends entirely on usage. It is impossible to provide a fixed monthly price, but we can create a clear model for estimating it.
+
+*   **Estimation Formula:** `(Emails per Month) x (Avg. Tokens per Email) x (Cost per Token)`
+
+*   **Example Scenario:**
+    *   Assume **1,000 emails** are processed per month.
+    *   Each email process (reading, analysis, and drafting a response) consumes an average of **4,000 tokens**.
+    *   Using a cost-effective yet powerful model like OpenAI's `gpt-3.5-turbo` (at ~$1.50 per 1 million output tokens).
+    *   **Calculation:** `(1,000 emails * 4,000 tokens) = 4,000,000 tokens` -> `(4M / 1M) * $1.50 = $6.00`
+
+*   **Important Note:** This is a conservative estimate. The final cost will depend on the actual number of emails, their complexity, and the specific AI model chosen. More powerful models like GPT-4 are more expensive but may provide higher accuracy. We recommend allocating an initial budget of **$20 - $50 per month** for AI processing fees and adjusting based on real-world usage data.
+
 ## 5. Detailed Project Plan
 
 This project is meticulously planned from start to finish. For a granular, task-by-task breakdown of the entire development process, please refer to the following file:
